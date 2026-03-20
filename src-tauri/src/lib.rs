@@ -1,6 +1,7 @@
 mod auth;
 mod types;
 mod spotify;
+mod ticketmaster;
 
 #[tauri::command]
 async fn login() -> Result<String, String> {
@@ -10,12 +11,23 @@ async fn login() -> Result<String, String> {
 
     let token = auth::authenticate().await?;
     let artists = spotify::get_top_artists(&token).await?;
+    let concerts = ticketmaster::get_concerts(&artists, "GB").await?;
 
-    for artist in artists {
-        println!("Artist: {}", artist.name);
+    if concerts.is_empty() {
+        println!("No upcoming concerts found in your area");
+    } else {
+        println!("\nRecommended Concerts\n");
+        for concert in &concerts {
+            println!("Artist: {}", concert.artist_name);
+            println!("Event:  {}", concert.event_name);
+            println!("Venue:  {}", concert.venue);
+            println!("City:   {}", concert.city);
+            println!("Date:   {}", concert.date);
+            println!("---");
+        }
     }
 
-    Ok(token)
+    Ok("Done".to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
