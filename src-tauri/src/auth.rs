@@ -14,11 +14,11 @@ pub async fn authenticate() -> Result<String, String> {
 
     // read id, secret, and redirect uri from .env
     let client_id = std::env::var("S_ID")
-        .map_err(|_| "Missing SPOTIFY_CLIENT_ID".to_string())?;
+        .map_err(|_| "Missing Spotify client Id".to_string())?;
     let client_secret = std::env::var("S_SECRET")
-        .map_err(|_| "Missing SPOTIFY_CLIENT_SECRET".to_string())?;
+        .map_err(|_| "Missing Spotify client secret".to_string())?;
     let redirect_uri = std::env::var("S_REDIRECT_URI")
-        .map_err(|_| "Missing SPOTIFY_REDIRECT_URI".to_string())?;
+        .map_err(|_| "Missing Spotify redirect URI".to_string())?;
 
     // oauth client
     let client = BasicClient::new(
