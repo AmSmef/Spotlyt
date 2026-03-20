@@ -1,12 +1,21 @@
 mod auth;
 mod types;
+mod spotify;
 
 #[tauri::command]
 async fn login() -> Result<String, String> {
     let manifest_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     let env_path = manifest_dir.join("../.env");
     dotenvy::from_path(env_path).ok();
-    auth::authenticate().await
+
+    let token = auth::authenticate().await?;
+    let artists = spotify::get_top_artists(&token).await?;
+
+    for artist in artists {
+        println!("Artist: {}", artist.name);
+    }
+
+    Ok(token)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
