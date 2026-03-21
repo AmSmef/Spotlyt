@@ -1,15 +1,13 @@
 # Spotlyt
-
 Spotlyt is a tool for finding concerts from your favourite artists.
 
 ## Yesterday
-- `auth.rs` — Spotify OAuth flow, listens on port 8000 for callback
-- `spotify.rs` — fetches top 20 artists using user-top-read scope
-- `ticketmaster.rs` — searches concerts by artist, deduplicates results
-- `types.rs` — Artist, Concert structs + normalise_artist_name()
-- `lib.rs` — wires everything together, currently hardcoded to GB
+- Migrated from Tauri to Axum, restructured project into `backend/` and `frontend/` monorepo
+- `main.rs` — Axum HTTP server with three routes: `/auth/login`, `/auth/callback`, `/concerts`
+- `auth.rs` — refactored into `generate_auth_url()` and `exchange_code()`, with shared `build_oauth_client()` helper
+- Added shared `AppState` (CSRF token + access token)
+- Added CORS layer
 
 ## Today
-- Build React frontend to display concerts
-- Make country code dynamic (user input)
-- Token caching so user doesn't log in every time
+- Build React frontend (country code input + concert display)
+- Wire frontend up to the three Axum endpoints and test e2e
