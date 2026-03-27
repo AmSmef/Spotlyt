@@ -7,7 +7,7 @@ pub async fn get_top_artists(access_token: &str) -> Result<Vec<Artist>, String> 
     // medium_term gives data from the past 6 months
     // could also use short_term (4 weeks) or long_term (all time)
     let response = client
-    .get("https://api.spotify.com/v1/me/top/artists?limit=20&time_range=medium_term")
+    .get("https://api.spotify.com/v1/me/top/artists?limit=50&time_range=long_term")
     .bearer_auth(access_token)
     .send()
     .await
@@ -22,7 +22,7 @@ pub async fn get_top_artists(access_token: &str) -> Result<Vec<Artist>, String> 
     // create artists array with ID and Name
     let artists = json["items"]
     .as_array()
-    .ok_or("No items in response")?
+    .ok_or_else(|| format!("No items in Spotify response: {}", json))?
     .iter()
     .map(|item| Artist {
         id: item["id"].as_str().unwrap_or("").to_string(),
