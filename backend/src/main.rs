@@ -9,9 +9,12 @@ use serde::Deserialize;
 use tower_http::cors::{CorsLayer, Any};
 
 mod auth;
+mod error;
 mod types;
 mod spotify;
 mod ticketmaster;
+
+use error::AppError;
 
 struct AppState {
     csrf_token: Option<String>,
@@ -33,7 +36,7 @@ struct ConcertsParams {
 async fn main() {
     dotenvy::dotenv().ok();
 
-    let shared_state = Arc::nw(Mutex::new(AppState {
+    let shared_state = Arc::new(Mutex::new(AppState {
         csrf_token: None,
         access_token: None,
     }));
@@ -58,8 +61,9 @@ async fn main() {
 
 async fn login_handler(
     State(state): State<Arc<Mutex<AppState>>>,
-) -> Result<Redirect, String> {
-    let (auth_url, csrf_token) = auth::generate_auth_url()?;
+) -> Result<Redirect, AppError> {
+    let (auth_url, csrf_token) = auth::generate_auth_url()
+        .map_err(AppError::Internal)?;
 
     state.lock().unwrap().csrf_token = Some(csrf_token);
 
@@ -69,38 +73,41 @@ async fn login_handler(
 async fn callback_handler(
     State(state): State<Arc<Mutex<AppState>>>,
     Query(params): Query<CallbackParams>,
-) -> Result<Json<serde_json::Value>, String> {
+) -> Result<Redirect, AppError> {
     let stored_csrf = state
         .lock()
         .unwrap()
         .csrf_token
         .clone()
-        .ok_or("CSRF token missing".to_string())?;
+        .ok_or(AppError::Internal("CSRF token missing".to_string()))?;
 
     if params.state != stored_csrf {
-        return Err("CSRF token mismatch".to_string());
+        return Err(AppError::Unauthorized("CSRF token mismatch".to_string()));
     }
 
-    let access_token = auth::exchange_code(params.code).await?;
+    let access_token = auth::exchange_code(params.code).await
+        .map_err(AppError::Internal)?;
 
     state.lock().unwrap().access_token = Some(access_token);
 
-    Ok(Json(serde_json::json!({ "message": "Login successful" })))
+    Ok(Redirect::to("http://127.0.0.1:5173?loggedin=true"))
 }
 
 async fn concerts_handler(
     State(state): State<Arc<Mutex<AppState>>>,
     Query(params): Query<ConcertsParams>,
-) -> Result<Json<Vec<types::Concert>>, String> {
+) -> Result<Json<Vec<types::Concert>>, AppError> {
     let access_token = state
         .lock()
         .unwrap()
         .access_token
         .clone()
-        .ok_or("User not authenticated".to_string())?;
+        .ok_or(AppError::Unauthorized("User not authenticated".to_string()))?;
 
-    let artists = spotify::get_top_artists(&access_token).await?;
-    let concerts = ticketmaster::get_concerts(&artists, &params.country).await?;
+    let artists = spotify::get_top_artists(&access_token).await
+        .map_err(AppError::Internal)?;
+    let concerts = ticketmaster::get_concerts(&artists, &params.country).await
+        .map_err(AppError::Internal)?;
 
     Ok(Json(concerts))
 }
