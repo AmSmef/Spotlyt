@@ -4,6 +4,9 @@
 # Rust build output
 target/
 
+# claude settings
+.claude
+
 # Logs
 logs
 *.log
