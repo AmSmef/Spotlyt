@@ -12,3 +12,5 @@ Spotlyt is a tool for finding concerts from your favourite artists.
 - Implement Google OAuth for Spotlyt accounts
 - Implement email/password signup alongside Google
 - User profile schema: users, oauth_accounts, email_accounts, spotify_connections
+
+Next up is updating the frontend to use the new auth flow — register/login first, then link Spotify
