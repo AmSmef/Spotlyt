@@ -642,3 +642,11 @@ footer {
   border-color: var(--muted);
   background: var(--faint);
 }
+
+/* ── Spotify Link ── */
+.screen-spotify-link {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
