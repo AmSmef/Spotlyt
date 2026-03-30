@@ -10,6 +10,8 @@ target/
 # claude context file
 CLAUDE.md
 
+docs/
+
 # Logs
 logs
 *.log
