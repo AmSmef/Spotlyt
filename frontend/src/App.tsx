@@ -6,7 +6,7 @@ import CountrySelection from "./pages/CountrySelection";
 import Loading from "./pages/Loading";
 import Home from "./pages/Home";
 import ErrorPage from "./pages/Error";
-import { checkSession, checkSpotifyStatus, User } from "./api";
+import { checkSession, User } from "./api";
 
 const API = "http://127.0.0.1:8080";
 
@@ -22,6 +22,9 @@ type Screen = "init" | "auth" | "spotify-link" | "country" | "loading" | "result
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("init");
+  // user is stored for future display-name rendering
+  const [user, setUser] = useState<User | null>(null);
+  void user; // referenced here until display-name rendering is wired up
   const [country, setCountry] = useState("");
   const [concerts, setConcerts] = useState<Concert[]>([]);
   const [errorMsg, setErrorMsg] = useState("");
@@ -35,13 +38,16 @@ export default function App() {
       if (params.get("spotify_linked") === "true") {
         const sessionUser = await checkSession();
         if (!sessionUser) { setScreen("auth"); return; }
+        setUser(sessionUser);
         setScreen("country");
         return;
       }
 
       if (params.get("loggedin") === "true") {
-        const linked = await checkSpotifyStatus();
-        setScreen(linked ? "country" : "spotify-link");
+        const sessionUser = await checkSession();
+        if (!sessionUser) { setScreen("auth"); return; }
+        setUser(sessionUser);
+        setScreen(sessionUser.spotify_linked ? "country" : "spotify-link");
         return;
       }
 
@@ -50,6 +56,7 @@ export default function App() {
         setScreen("auth");
         return;
       }
+      setUser(sessionUser);
       setScreen(sessionUser.spotify_linked ? "country" : "spotify-link");
     }
     init();
@@ -64,6 +71,7 @@ export default function App() {
   }, [screen]);
 
   function handleAuth(authUser: User) {
+    setUser(authUser);
     setScreen(authUser.spotify_linked ? "country" : "spotify-link");
   }
 
@@ -100,6 +108,7 @@ export default function App() {
       </header>
 
       <main>
+        {screen === "init" && <Loading dots="" />}
         {screen === "auth" && <Auth onAuth={handleAuth} />}
         {screen === "spotify-link" && <SpotifyLink />}
         {screen === "country" && (
