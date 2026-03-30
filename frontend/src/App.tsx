@@ -33,6 +33,8 @@ export default function App() {
       window.history.replaceState({}, "", "/");
 
       if (params.get("spotify_linked") === "true") {
+        const sessionUser = await checkSession();
+        if (!sessionUser) { setScreen("auth"); return; }
         setScreen("country");
         return;
       }
@@ -69,6 +71,7 @@ export default function App() {
     const code = country.trim().toUpperCase();
     if (code.length !== 2) return;
     setScreen("loading");
+    setErrorMsg("");
     try {
       const res = await fetch(`${API}/concerts?country=${code}`, {
         credentials: "include",
@@ -97,7 +100,6 @@ export default function App() {
       </header>
 
       <main>
-        {screen === "init" && null}
         {screen === "auth" && <Auth onAuth={handleAuth} />}
         {screen === "spotify-link" && <SpotifyLink />}
         {screen === "country" && (
