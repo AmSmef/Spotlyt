@@ -7,6 +7,9 @@ target/
 # claude settings
 .claude
 
+# claude context file
+CLAUDE.md
+
 # Logs
 logs
 *.log
@@ -20,6 +23,9 @@ node_modules
 dist
 dist-ssr
 *.local
+
+# Git worktrees
+.worktrees/
 
 # Editor directories and files
 .vscode/*
