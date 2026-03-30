@@ -18,6 +18,9 @@ export default function Auth({ onAuth }: Props) {
   function switchTab(t: Tab) {
     setTab(t);
     setError("");
+    setUsername("");
+    setDisplayName("");
+    setPassword("");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -30,8 +33,8 @@ export default function Auth({ onAuth }: Props) {
           ? await login(username, password)
           : await register(username, displayName, password);
       onAuth(user);
-    } catch (err: any) {
-      setError(err.message ?? "Something went wrong");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -58,8 +61,9 @@ export default function Auth({ onAuth }: Props) {
 
       <form className="auth-form" onSubmit={handleSubmit}>
         <div className="auth-field">
-          <label className="auth-label">Username</label>
+          <label className="auth-label" htmlFor="username">Username</label>
           <input
+            id="username"
             className="auth-input"
             type="text"
             value={username}
@@ -72,8 +76,9 @@ export default function Auth({ onAuth }: Props) {
 
         {tab === "register" && (
           <div className="auth-field">
-            <label className="auth-label">Display name</label>
+            <label className="auth-label" htmlFor="display-name">Display name</label>
             <input
+              id="display-name"
               className="auth-input"
               type="text"
               value={displayName}
@@ -85,8 +90,9 @@ export default function Auth({ onAuth }: Props) {
         )}
 
         <div className="auth-field">
-          <label className="auth-label">Password</label>
+          <label className="auth-label" htmlFor="password">Password</label>
           <input
+            id="password"
             className="auth-input"
             type="password"
             value={password}
