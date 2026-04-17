@@ -70,6 +70,10 @@ body::after {
   flex-direction: column;
 }
 
+.app:has(.screen-results) {
+  max-width: 960px;
+}
+
 /* ── Header ── */
 header {
   padding: 36px 0 0;
@@ -370,72 +374,79 @@ main { flex: 1; }
   border-color: var(--muted);
 }
 
-/* Concert list */
-.concert-list {
-  list-style: none;
+/* Concert card grid */
+.concert-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
 }
 
 .concert-card {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
-  align-items: center;
-  padding: 20px 12px;
-  border-top: 1px solid var(--border);
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
   cursor: default;
-  border-radius: 2px;
   animation: rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-  transition: background 0.12s;
 }
 
-.concert-card:last-child {
-  border-bottom: 1px solid var(--border);
+.concert-card--no-image {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
 }
 
-.concert-card:hover {
-  background: var(--faint);
+.concert-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.85) 0%,
+    rgba(0, 0, 0, 0.4) 30%,
+    transparent 55%
+  );
+  pointer-events: none;
 }
 
-.card-artist {
-  font-family: var(--ff-display);
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-  margin-bottom: 3px;
-}
-
-.card-event {
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 8px;
-  font-weight: 300;
-}
-
-.card-venue {
+.concert-card__info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 16px;
   display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 13px;
-  color: var(--text);
-  opacity: 0.6;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 65%;
+}
+
+.concert-card__artist {
+  font-family: var(--ff-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.concert-card__event {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
   font-weight: 300;
 }
 
-.card-venue svg {
-  opacity: 0.5;
-  flex-shrink: 0;
+.concert-card__venue {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 300;
+  margin-top: 4px;
 }
 
-.card-right {
-  text-align: right;
-}
-
-.card-date {
+.concert-card__date {
   font-family: var(--ff-mono);
-  font-size: 12px;
+  font-size: 11px;
   color: var(--accent);
+  font-weight: 500;
   letter-spacing: 0.04em;
-  white-space: nowrap;
 }
 
 /* ── Empty state ── */
@@ -506,8 +517,7 @@ footer {
 @media (max-width: 500px) {
   .landing-headline { font-size: 46px; }
   .results-header { flex-direction: column; align-items: flex-start; }
-  .concert-card { grid-template-columns: 1fr; }
-  .card-right { text-align: left; }
+  .concert-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ── Auth ── */

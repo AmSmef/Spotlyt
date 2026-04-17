@@ -16,6 +16,7 @@ interface Concert {
   venue: string;
   city: string;
   date: string;
+  image_url: string | null;
 }
 
 type Screen = "init" | "auth" | "spotify-link" | "country" | "loading" | "results" | "error";

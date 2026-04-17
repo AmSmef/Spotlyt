@@ -1,11 +1,10 @@
-import { PinIcon } from "../components/Icons";
-
 interface Concert {
   artist_name: string;
   event_name: string;
   venue: string;
   city: string;
   date: string;
+  image_url: string | null;
 }
 
 function formatDate(iso: string): string {
@@ -45,23 +44,26 @@ export default function Home({ concerts, country, onBack }: Props) {
           <p className="empty-sub">Try a different country or check back later.</p>
         </div>
       ) : (
-        <ul className="concert-list">
+        <div className="concert-grid">
           {concerts.map((c, i) => (
-            <li key={i} className="concert-card" style={{ animationDelay: `${i * 0.05}s` }}>
-              <div className="card-left">
-                <div className="card-artist">{c.artist_name}</div>
-                <div className="card-event">{c.event_name}</div>
-                <div className="card-venue">
-                  <PinIcon />
-                  {c.venue}, {c.city}
-                </div>
+            <div
+              key={i}
+              className={`concert-card ${!c.image_url ? 'concert-card--no-image' : ''}`}
+              style={{
+                backgroundImage: c.image_url ? `url(${c.image_url})` : undefined,
+                animationDelay: `${i * 0.05}s`,
+              }}
+            >
+              <div className="concert-card__overlay" />
+              <div className="concert-card__info">
+                <span className="concert-card__artist">{c.artist_name}</span>
+                <span className="concert-card__event">{c.event_name}</span>
+                <span className="concert-card__venue">{c.venue}, {c.city}</span>
+                <span className="concert-card__date">{formatDate(c.date)}</span>
               </div>
-              <div className="card-right">
-                <div className="card-date">{formatDate(c.date)}</div>
-              </div>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
