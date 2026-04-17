@@ -60,6 +60,25 @@ pub async fn get_concerts(artists: &[Artist], country_code: &str) -> Result<Vec<
             .unwrap_or("Unknown Date")
             .to_string();
 
+            let image_url = event["images"]
+                .as_array()
+                .and_then(|images| {
+                    let mut matching: Vec<_> = images
+                        .iter()
+                        .filter(|img| img["ratio"].as_str() == Some("16_9"))
+                        .collect();
+                    matching.sort_by(|a, b| {
+                        let w_a = a["width"].as_u64().unwrap_or(0);
+                        let w_b = b["width"].as_u64().unwrap_or(0);
+                        w_b.cmp(&w_a)
+                    });
+                    matching
+                        .first()
+                        .or(images.first().as_ref())
+                        .and_then(|img| img["url"].as_str())
+                        .map(|s| s.to_string())
+                });
+
             // name matching logic between spotify and ticketmaster
             let attractions = event["_embedded"]["attractions"]
             .as_array()
@@ -79,6 +98,7 @@ pub async fn get_concerts(artists: &[Artist], country_code: &str) -> Result<Vec<
                     venue,
                     city,
                     date,
+                    image_url,
                 });
             }
         }

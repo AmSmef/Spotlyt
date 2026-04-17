@@ -14,6 +14,7 @@ pub struct Concert {
     pub venue: String,
     pub city: String,
     pub date: String,
+    pub image_url: Option<String>,
 }
 
 #[derive(Debug, Clone, sqlx::FromRow)]
