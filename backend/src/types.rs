@@ -9,7 +9,7 @@ pub struct Artist {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Concert {
-    pub artist_name: String,
+    pub artist_names: Vec<String>,
     pub event_name: String,
     pub venue: String,
     pub city: String,

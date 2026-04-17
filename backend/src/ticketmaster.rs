@@ -1,6 +1,6 @@
 use reqwest::Client;
 use crate::types::{Artist, Concert, normalise_artist_name};
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 pub async fn get_concerts(artists: &[Artist], country_code: &str) -> Result<Vec<Concert>, String> {
 
@@ -9,7 +9,9 @@ pub async fn get_concerts(artists: &[Artist], country_code: &str) -> Result<Vec<
     .map_err(|_| "Missing TicketMaster API Key".to_string())?;
 
     let client = Client::new();
-    let mut concerts: Vec<Concert> = Vec::new();
+
+    // keyed by (event_name, venue, date) to merge artists appearing at the same event
+    let mut concert_map: HashMap<String, Concert> = HashMap::new();
 
     // loop over artists, making http requests to ticketmaster api
     for artist in artists {
@@ -89,33 +91,30 @@ pub async fn get_concerts(artists: &[Artist], country_code: &str) -> Result<Vec<
             )
             .unwrap_or_default();
 
-            // add concert data to vector if the artist is a name attraction for the event
+            // add concert data if the artist is a named attraction for the event
             let normalised_artist = normalise_artist_name(&artist.name);
             if attractions.contains(&normalised_artist) {
-                concerts.push(Concert {
-                    artist_name: artist.name.clone(),
-                    event_name,
-                    venue,
-                    city,
-                    date,
-                    image_url,
-                });
+                let key = format!("{}-{}-{}", event_name, venue, date);
+
+                concert_map.entry(key)
+                    .and_modify(|existing| {
+                        if !existing.artist_names.contains(&artist.name) {
+                            existing.artist_names.push(artist.name.clone());
+                        }
+                    })
+                    .or_insert(Concert {
+                        artist_names: vec![artist.name.clone()],
+                        event_name,
+                        venue,
+                        city,
+                        date,
+                        image_url,
+                    });
             }
         }
     }
 
-    // occasionally the same concert will be listed twice on ticketmaster
-    // like standard tickets vs premium etc etc
-    // this deduplicates, so no concert appears in the vector twice
-    // I may actually end up removing this, if ticketmaster have duplicates then why shouldn't I???
-    let mut seen = HashSet::new();
-    let concerts: Vec<Concert> = concerts
-        .into_iter()
-        .filter(|c| {
-            let key = format!("{}-{}-{}", c.artist_name, c.venue, c.date);
-            seen.insert(key)
-        })
-        .collect();
-                
+    let concerts: Vec<Concert> = concert_map.into_values().collect();
+
     Ok(concerts)
 }

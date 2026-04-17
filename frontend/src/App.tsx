@@ -11,7 +11,7 @@ import { checkSession, User } from "./api";
 const API = "http://127.0.0.1:8080";
 
 interface Concert {
-  artist_name: string;
+  artist_names: string[];
   event_name: string;
   venue: string;
   city: string;

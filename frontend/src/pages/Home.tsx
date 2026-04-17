@@ -1,5 +1,5 @@
 interface Concert {
-  artist_name: string;
+  artist_names: string[];
   event_name: string;
   venue: string;
   city: string;
@@ -56,7 +56,7 @@ export default function Home({ concerts, country, onBack }: Props) {
             >
               <div className="concert-card__overlay" />
               <div className="concert-card__info">
-                <span className="concert-card__artist">{c.artist_name}</span>
+                <span className="concert-card__artist">{c.artist_names.join(" & ")}</span>
                 <span className="concert-card__event">{c.event_name}</span>
                 <span className="concert-card__venue">{c.venue}, {c.city}</span>
                 <span className="concert-card__date">{formatDate(c.date)}</span>
