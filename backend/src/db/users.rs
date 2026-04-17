@@ -43,10 +43,37 @@ pub async fn find_or_create_by_google_id(
     email: &str,
     display_name: &str,
 ) -> Result<User, sqlx::Error> {
+    // 1. Already linked to this Google account?
+    if let Some(user) = sqlx::query_as::<_, User>("SELECT * FROM users WHERE google_id = $1")
+        .bind(google_id)
+        .fetch_optional(pool)
+        .await?
+    {
+        return Ok(user);
+    }
+
+    // 2. Existing account with same email? Link it.
+    if let Some(user) = sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
+        .bind(email)
+        .fetch_optional(pool)
+        .await?
+    {
+        if user.google_id.is_none() {
+            return sqlx::query_as::<_, User>(
+                "UPDATE users SET google_id = $1, updated_at = NOW() WHERE id = $2 RETURNING *",
+            )
+            .bind(google_id)
+            .bind(user.id)
+            .fetch_one(pool)
+            .await;
+        }
+        return Ok(user);
+    }
+
+    // 3. New user entirely.
     sqlx::query_as::<_, User>(
         "INSERT INTO users (google_id, email, display_name)
          VALUES ($1, $2, $3)
-         ON CONFLICT (google_id) DO UPDATE SET updated_at = NOW()
          RETURNING *",
     )
     .bind(google_id)

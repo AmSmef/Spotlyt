@@ -35,6 +35,10 @@ pub async fn register(
     State(state): State<AppState>,
     Json(req): Json<RegisterRequest>,
 ) -> Result<Response, AppError> {
+    if req.username.contains('@') {
+        return Err(AppError::BadRequest("Username cannot be an email address".to_string()));
+    }
+
     let salt = SaltString::generate(&mut OsRng);
     let password_hash = Argon2::default()
         .hash_password(req.password.as_bytes(), &salt)
